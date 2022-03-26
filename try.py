@@ -103,41 +103,44 @@ matcher = DistanceMatcher(map_con,
                           non_emitting_states=True)
 
 pp_start = time()
-#进行地图匹配===========================================================
+
+#进行地图匹配=========================================================================================
 #法一： 不用并行时
 states,_ = matcher.match(path, unique=False)
+# 得到的结果是一个元组（列表，整型）,形如([(4220527834, 2329094579),(4220527834, 2329094579)],1246)
 
 # -----------------------------------------------
-#法二 使用多进程并行加速匹配过程
-# 将path列表分割成若干份
+"""
+法二 使用多进程并行加速匹配过程
+
+将path列表分割成若干份
 def split(a, n):
     k, m = divmod(len(a), n)
     return (a[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n))
 father_list = split(path,4)
 
-"""
-states,_ = matcher.match(path, unique=False)  返回值是一个元组（列表，整型）, 就是法一的108行的states,_ = matcher.match(path, unique=False)
-如([(4220527834, 2329094579),(4220527834, 2329094579)],1246)
-"""
-list0 = []
+此时得到的father_list是一个大列表，其形式为： [[列表1]，[列表2]，[列表3]，[列表4]]
+
+
+list0 = [] 用于存储每次运行pp函数后的states
 def pp(path,list0):
     states, _ = matcher.match(path, unique=False)
     list0 = list0 + states
 
 size=4
-pool=Pool(size) #设置
-"""
-father_list是 一个大列表 --> [[列表1]，[列表2]，[列表3]，[列表4]],
-我想把这里面4个子列表用四个进程同时运行，并将他们的结果合并到一起
-"""
+pool=Pool(size)
+
+我想把这个子列表用四个进程同时运行，并将他们的结果合并到一起
+
 for i in father_list:
     pool.apply_async(matcher.match,args=(i,))
 pool.close()
 pool.join()
+"""
 # ===========================================================================================================
 pp_stop = time()
 
-print(pp_stop - pp_start)
+print(pp_stop - pp_start) #记录匹配用时
 
 #绘制底图匹配结果
 mmviz.plot_map(map_con, matcher=matcher,
