@@ -77,7 +77,7 @@ print(wl_end - wl_start)  # 16.712316036224365
 
 #读取数据------------------------------------------
 import transbigdata as tbd
-data = pd.read_csv(r'E:\essay\gps_data\1\cut_pu\ct_cc2d380a0f62fb268512c6565e2f5c4d',sep='\t')
+data = pd.read_csv(r'E:\ct_cc2d380a0f62fb268512c6565e2f5c4d',sep='\t')
 data.columns=['order','time','Lng','Lat']
 
 #转换轨迹的坐标系为地理坐标系
@@ -103,19 +103,20 @@ matcher = DistanceMatcher(map_con,
                           non_emitting_states=True)
 
 pp_start = time()
-#进行地图匹配
+#进行地图匹配===========================================================
+#法一： 不用并行时
+states,_ = matcher.match(path, unique=False)
 
+# -----------------------------------------------
+#法二 使用多进程并行加速匹配过程
 # 将path列表分割成若干份
 def split(a, n):
     k, m = divmod(len(a), n)
     return (a[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n))
 father_list = split(path,4)
 
-states,_ = matcher.match(path, unique=False)
-
-
 """
-matcher.match(path, unique=False)  返回值是一个元组（列表，整型）,
+states,_ = matcher.match(path, unique=False)  返回值是一个元组（列表，整型）, 就是法一的108行的states,_ = matcher.match(path, unique=False)
 如([(4220527834, 2329094579),(4220527834, 2329094579)],1246)
 """
 list0 = []
@@ -133,7 +134,7 @@ for i in father_list:
     pool.apply_async(matcher.match,args=(i,))
 pool.close()
 pool.join()
-
+# ===========================================================================================================
 pp_stop = time()
 
 print(pp_stop - pp_start)
