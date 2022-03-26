@@ -120,6 +120,7 @@ father_list = split(path,4)
 
 #此时得到的father_list是一个大列表，其形式为： [[列表1]，[列表2]，[列表3]，[列表4]]
 
+#未成功的部分如下
 
 list0 = [] #用于存储每次运行pp函数后的states
 def pp(path,list0):
@@ -128,13 +129,13 @@ def pp(path,list0):
 
 size=4
 pool=Pool(size)
-
-#我想把father_list中的四个子列表分别用四个进程同时运行，并将他们的结果合并到一起，得到和法一一样的states
-
 for i in father_list:
     pool.apply_async(matcher.match,args=(i,))
 pool.close()
 pool.join()
+#我想把father_list中的四个子列表分别用四个进程同时运行，并将他们的结果合并到一起，得到和法一一样的states
+
+
 """
 # ===========================================================================================================
 pp_stop = time()
