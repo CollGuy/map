@@ -1,4 +1,3 @@
-import transbigdata as tbd
 import osmnx as ox
 from time import *
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
